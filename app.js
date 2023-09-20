@@ -7,15 +7,19 @@
 function showGif(url) {
   $("#gifs").append($("<img>").attr("src", url));
 }
-/** Takes an event parameter,
- * queries Giphy API with users search input,
- * and appends the resulting gif to the DOM. */
 
-async function search(evt) {
-  evt.preventDefault();
+/** Returns user input */
 
-  const searchText = $("#search-text").val();
+function getSearchText() {
+  return $("#search-text").val();
+}
 
+/** Takes search parameter,
+ * queries GIPHY API,
+ * and returns gif url.
+ */
+
+async function searchForGif(searchText) {
   const params = new URLSearchParams({
     q: searchText,
     api_key: "MhAodEJIJxQMxW9XqxKjyXfNYdLoOIym"
@@ -25,8 +29,24 @@ async function search(evt) {
   const responseObj = await response.json();
   console.log(responseObj);
 
-  if (responseObj.data.length === 0) return;
-  showGif(responseObj.data[0].images.downsized.url);
+  if (responseObj.data.length === 0) return null;
+
+  return responseObj.data[0].images.downsized.url;
+}
+
+/** Takes an event parameter,
+ * queries Giphy API with users search input,
+ * and appends the resulting gif to the DOM. */
+
+async function handleSubmit(evt) {
+  evt.preventDefault();
+
+  const searchText = getSearchText();
+
+  const url = await searchForGif(searchText);
+  if (!url) return;
+
+  showGif(url);
 
   $("#search-text").val('');
 }
@@ -38,6 +58,6 @@ function remove() {
   $("#gifs").empty();
 }
 
-$("#search-button").on("click", search);
+$("#search-button").on("click", handleSubmit);
 
 $("#remove").on("click", remove);
